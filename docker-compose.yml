@@ -10,6 +10,8 @@ services:
   app:
     build: .
     env_file: .env
+    tty: true
+    stdin_open: true
     depends_on:
       - db
 

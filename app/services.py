@@ -2,17 +2,17 @@ from typing import final as _final
 from sqlalchemy import func as _func
 from logging import exception as _exception
 from sqlalchemy.orm import Session as _Session
-from app.db import SessionLocal as _SessionLocal
-from app.models import Sucursal as _Sucursal, OrdenExterna as _OrdenExterna, DetalleOrdenExterna as _DetalleOrdenExterna
+from db import SessionLocal as _SessionLocal
+from models import Sucursal as _Sucursal, OrdenExterna as _OrdenExterna, DetalleOrdenExterna as _DetalleOrdenExterna
 
 
 @_final
 class OMSService:
     @staticmethod
-    def recibir_lote_ordenes(payload_crudo: dict[str, list[dict[str, object]]]) -> None:
+    def recibir_lote_ordenes(payloadCrudo: dict[str, list[dict[str, object]]]) -> None:
         session = _SessionLocal()
         try:
-            for orden in payload_crudo['ordenes']:
+            for orden in payloadCrudo['ordenes']:
                 if orden['total'] < 0:  # type: ignore
                     raise ValueError('Total inválido')
                 sucursal = session.query(_Sucursal).filter_by(

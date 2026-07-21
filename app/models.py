@@ -1,4 +1,4 @@
-from app.db import Base as _Base
+from db import Base as _Base
 from typing import final as _final
 from sqlalchemy.orm import relationship as _relationship
 from sqlalchemy import Column as _Column, String as _String, Integer as _Integer, Numeric as _Numeric, ForeignKey as _ForeignKey
