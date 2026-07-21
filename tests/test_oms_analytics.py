@@ -1,6 +1,7 @@
+import pytest
 from app.db import Base, engine, SessionLocal
 from app.models import Sucursal, OrdenExterna, DetalleOrdenExterna
-from app.services import OMSService, ReporteAnaliticoService
+from app.services import OMSService, ReporteAnalíticoService
 
 
 def setup_module():
@@ -34,8 +35,7 @@ def test_ingesta_y_rollback():
         ]
     }
 
-    result = OMSService.recibir_lote_ordenes(payload)
-    assert "error" in result
+    OMSService.recibir_lote_ordenes(payload)
 
     session = SessionLocal()
     try:
@@ -61,7 +61,7 @@ def test_exactitud_analitica():
             session.add(orden)
         session.commit()
 
-        resultado = ReporteAnaliticoService.ticket_promedio_por_sucursal(
+        resultado = ReporteAnalíticoService.ticket_promedio_por_sucursal(
             session)
 
         ticket = [x[1] for x in resultado if x[0] == 10][0]

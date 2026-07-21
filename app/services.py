@@ -1,78 +1,75 @@
-from sqlalchemy import func
-from app.db import SessionLocal
-from app.models import Sucursal, OrdenExterna, DetalleOrdenExterna
+from typing import final as _final
+from sqlalchemy import func as _func
+from logging import exception as _exception
+from sqlalchemy.orm import Session as _Session
+from app.db import SessionLocal as _SessionLocal
+from app.models import Sucursal as _Sucursal, OrdenExterna as _OrdenExterna, DetalleOrdenExterna as _DetalleOrdenExterna
 
 
+@_final
 class OMSService:
     @staticmethod
-    def recibir_lote_ordenes(payload_crudo):
-        session = SessionLocal()
+    def recibir_lote_ordenes(payload_crudo: dict[str, list[dict[str, object]]]) -> None:
+        session = _SessionLocal()
         try:
-            for orden in payload_crudo["ordenes"]:
-                if orden["total"] < 0:
-                    raise ValueError("Total inválido")
-
-                sucursal = session.query(Sucursal).filter_by(
-                    id=orden["sucursal_id"]).first()
+            for orden in payload_crudo['ordenes']:
+                if orden['total'] < 0:  # type: ignore
+                    raise ValueError('Total inválido')
+                sucursal = session.query(_Sucursal).filter_by(
+                    id=orden['sucursal_id']).first()
                 if not sucursal:
-                    sucursal = Sucursal(
-                        id=orden["sucursal_id"], nombre=f"Sucursal {orden['sucursal_id']}")
+                    sucursal = _Sucursal(
+                        id=orden['sucursal_id'], nombre=f'Sucursal {orden['sucursal_id']}')
                     session.add(sucursal)
                     session.flush()
-
-                orden_db = OrdenExterna(
-                    sucursal_id=orden["sucursal_id"],
-                    total=orden["total"]
+                orden_db = _OrdenExterna(
+                    sucursal_id=orden['sucursal_id'],
+                    total=orden['total']
                 )
                 session.add(orden_db)
                 session.flush()
-
-                for detalle in orden["detalles"]:
-                    if detalle["cantidad"] <= 0:
-                        raise ValueError("Cantidad inválida")
-                    if detalle["precio_unitario"] < 0:
-                        raise ValueError("Precio inválido")
-
-                    detalle_db = DetalleOrdenExterna(
+                for detalle in orden['detalles']:  # type: ignore
+                    if detalle['cantidad'] <= 0:
+                        raise ValueError('Cantidad inválida')
+                    if detalle['precio_unitario'] < 0:
+                        raise ValueError('Precio inválido')
+                    detalle_db = _DetalleOrdenExterna(
                         orden_id=orden_db.id,
-                        producto_id=detalle["producto_id"],
-                        cantidad=detalle["cantidad"],
-                        precio_unitario=detalle["precio_unitario"]
+                        producto_id=detalle['producto_id'],
+                        cantidad=detalle['cantidad'],
+                        precio_unitario=detalle['precio_unitario']
                     )
                     session.add(detalle_db)
-
             session.commit()
-            return {"mensaje": "lote procesado correctamente"}
-
-        except Exception as e:
+        except BaseException as e:
+            _exception(e)
             session.rollback()
-            return {"error": str(e)}
-
         finally:
             session.close()
 
 
-class ReporteAnaliticoService:
+@_final
+class ReporteAnalíticoService:
     @staticmethod
-    def top_productos_vendidos(session):
+    def top_productos_vendidos(session: _Session):  # FIXME Missing type
         return (
             session.query(
-                DetalleOrdenExterna.producto_id,
-                func.sum(DetalleOrdenExterna.cantidad).label("total_vendido")
+                _DetalleOrdenExterna.producto_id,
+                _func.sum(_DetalleOrdenExterna.cantidad).label('total_vendido')
             )
-            .group_by(DetalleOrdenExterna.producto_id)
-            .order_by(func.sum(DetalleOrdenExterna.cantidad).desc())
+            .group_by(_DetalleOrdenExterna.producto_id)
+            .order_by(_func.sum(_DetalleOrdenExterna.cantidad).desc())
             .limit(5)
             .all()
         )
 
     @staticmethod
-    def ticket_promedio_por_sucursal(session):
+    def ticket_promedio_por_sucursal(session: _Session):  # FIXME Missing type
         return (
             session.query(
-                OrdenExterna.sucursal_id,
-                func.avg(OrdenExterna.total).label("ticket_promedio")
+                _OrdenExterna.sucursal_id,
+                _func.avg(_OrdenExterna.total).label('ticket_promedio')
             )
-            .group_by(OrdenExterna.sucursal_id)
+            .group_by(_OrdenExterna.sucursal_id)
             .all()
         )

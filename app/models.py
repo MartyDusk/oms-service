@@ -1,36 +1,41 @@
-from app.db import Base
-from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, ForeignKey, Numeric
+from app.db import Base as _Base
+from typing import final as _final
+from sqlalchemy.orm import relationship as _relationship
+from sqlalchemy import Column as _Column, String as _String, Integer as _Integer, Numeric as _Numeric, ForeignKey as _ForeignKey
 
 
-class Sucursal(Base):
-    __tablename__ = "sucursal"
+@_final
+class Sucursal(_Base):
+    __tablename__ = 'sucursal'
 
-    id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String(100), nullable=False)
+    id = _Column(_Integer, primary_key=True, index=True)
+    nombre = _Column(_String(100), nullable=False)
 
-    ordenes = relationship("OrdenExterna", back_populates="sucursal")
-
-
-class OrdenExterna(Base):
-    __tablename__ = "orden_externa"
-
-    id = Column(Integer, primary_key=True, autoincrement =True)
-    sucursal_id = Column(Integer, ForeignKey("sucursal.id"), nullable=False)
-    total = Column(Numeric(12, 2), nullable=False)
-
-    sucursal = relationship("Sucursal", back_populates="ordenes")
-    detalles = relationship(
-        "DetalleOrdenExterna", back_populates="orden", cascade="all, delete-orphan")
+    ordenes = _relationship('OrdenExterna', back_populates='sucursal')
 
 
-class DetalleOrdenExterna(Base):
-    __tablename__ = "detalle_orden_externa"
+@_final
+class OrdenExterna(_Base):
+    __tablename__ = 'orden_externa'
 
-    id = Column(Integer, primary_key=True, index=True)
-    orden_id = Column(Integer, ForeignKey("orden_externa.id"), nullable=False)
-    producto_id = Column(Integer, nullable=False)
-    cantidad = Column(Integer, nullable=False)
-    precio_unitario = Column(Numeric(12, 2), nullable=False)
+    id = _Column(_Integer, primary_key=True, autoincrement=True)
+    sucursal_id = _Column(_Integer, _ForeignKey('sucursal.id'), nullable=False)
+    total = _Column(_Numeric(12, 2), nullable=False)
 
-    orden = relationship("OrdenExterna", back_populates="detalles")
+    sucursal = _relationship('Sucursal', back_populates='ordenes')
+    detalles = _relationship(
+        'DetalleOrdenExterna', back_populates='orden', cascade='all, delete-orphan')
+
+
+@_final
+class DetalleOrdenExterna(_Base):
+    __tablename__ = 'detalle_orden_externa'
+
+    id = _Column(_Integer, primary_key=True, index=True)
+    orden_id = _Column(_Integer, _ForeignKey(
+        'orden_externa.id'), nullable=False)
+    producto_id = _Column(_Integer, nullable=False)
+    cantidad = _Column(_Integer, nullable=False)
+    precio_unitario = _Column(_Numeric(12, 2), nullable=False)
+
+    orden = _relationship('OrdenExterna', back_populates='detalles')
